@@ -1,6 +1,6 @@
 # 드론방제앱 작업 진행판
 
-마지막 갱신: 2026-06-10 01:41:04 +09:00
+마지막 갱신: 2026-06-10 01:43:48 +09:00
 
 ## 현재 목표
 
@@ -50,6 +50,7 @@
 - LAN QR 연결 실패 시 사용할 갤럭시 터널 실행 명령 추가
 - 갤럭시 터널 실행용 `@expo/ngrok` 의존성 고정
 - GitHub `jinsulchohae-drone-app` 저장소에 갤럭시 설치용 APK 릴리스 업로드 완료
+- 갤럭시 APK 빠른 설치 링크와 QR 문서 `GALAXY_QUICK_INSTALL.md` 추가
 - 갤럭시 APK 다운로드/설치/권한 문제 해결 문서 `APK_INSTALL.md` 추가
 - 갤럭시 APK 릴리스 노트 `APK_RELEASE_NOTES.md` 추가 및 GitHub 릴리스 본문 보강
 - APK SHA-256 체크섬 문서와 릴리스 자산 `APK_CHECKSUMS.txt` 추가
@@ -75,6 +76,7 @@
 - 릴리스 노트: `APK_RELEASE_NOTES.md`
 - 체크섬: `APK_CHECKSUMS.md`, `APK_CHECKSUMS.txt`
 - 다운로드 검증: `APK_DOWNLOAD_VERIFICATION.md`
+- 빠른 설치: `GALAXY_QUICK_INSTALL.md`
 
 ## 최신 푸시 상태
 
