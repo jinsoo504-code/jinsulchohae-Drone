@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { sampleFields } from "@/src/mocks/sampleData";
@@ -10,6 +10,7 @@ import { pickCompletionPhoto, uploadJobPhoto } from "@/src/services/photoService
 import { getSession } from "@/src/services/authService";
 import { JobStatus } from "@/src/types/domain";
 import { useFields } from "@/src/hooks/useFields";
+import { useAppStore } from "@/src/store/appStore";
 
 export default function FieldDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,12 +21,20 @@ export default function FieldDetailScreen() {
   );
   const [status, setStatus] = useState(field.job?.status ?? "pending");
   const [busy, setBusy] = useState(false);
+  const updateSampleJobStatus = useAppStore((state) => state.updateSampleJobStatus);
   const photos = field.photos ?? [];
+
+  useEffect(() => {
+    setStatus(field.job?.status ?? "pending");
+  }, [field.job?.status]);
 
   async function handleStatusChange(nextStatus: JobStatus) {
     setStatus(nextStatus);
 
     if (!field.job?.id || field.job.id.startsWith("job-")) {
+      if (field.job?.id) {
+        updateSampleJobStatus(field.job.id, nextStatus);
+      }
       return;
     }
 

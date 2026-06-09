@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchFields, subscribeFieldRealtime } from "@/src/services/fieldService";
-import { sampleFields } from "@/src/mocks/sampleData";
+import { useAppStore } from "@/src/store/appStore";
 import { FieldWithRelations } from "@/src/types/domain";
 
 type UseFieldsResult = {
@@ -11,6 +11,7 @@ type UseFieldsResult = {
 };
 
 export function useFields(): UseFieldsResult {
+  const sampleFields = useAppStore((state) => state.sampleFields);
   const [fields, setFields] = useState<FieldWithRelations[]>(sampleFields);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -35,6 +36,12 @@ export function useFields(): UseFieldsResult {
     refresh();
     return subscribeFieldRealtime(refresh);
   }, [refresh]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      setFields(sampleFields);
+    }
+  }, [errorMessage, sampleFields]);
 
   return { fields, loading, errorMessage, refresh };
 }
