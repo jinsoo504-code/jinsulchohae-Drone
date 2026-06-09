@@ -8,6 +8,13 @@ type ChecklistItem = {
   detail: string;
 };
 
+type ChecklistRecord = {
+  checked: boolean;
+  checkedAt: string | null;
+};
+
+type ChecklistState = Record<string, ChecklistRecord>;
+
 const STORAGE_KEY = "drone-device-checklist-v1";
 
 const CHECKLIST: ChecklistItem[] = [
@@ -54,8 +61,9 @@ const CHECKLIST: ChecklistItem[] = [
 ];
 
 export default function DeviceChecklistScreen() {
-  const [checkedIds, setCheckedIds] = useState<string[]>([]);
-  const completedCount = checkedIds.length;
+  const [checkState, setCheckState] = useState<ChecklistState>({});
+  const completedCount = CHECKLIST.filter((item) => checkState[item.id]?.checked).length;
+  const allCompleted = completedCount === CHECKLIST.length;
   const progressText = useMemo(
     () => `${completedCount}/${CHECKLIST.length} 완료`,
     [completedCount]
@@ -65,29 +73,49 @@ export default function DeviceChecklistScreen() {
     AsyncStorage.getItem(STORAGE_KEY)
       .then((rawValue) => {
         if (rawValue) {
-          setCheckedIds(JSON.parse(rawValue));
+          const parsedValue = JSON.parse(rawValue);
+
+          if (Array.isArray(parsedValue)) {
+            setCheckState(
+              parsedValue.reduce<ChecklistState>((acc, id) => {
+                acc[id] = {
+                  checked: true,
+                  checkedAt: null
+                };
+                return acc;
+              }, {})
+            );
+            return;
+          }
+
+          setCheckState(parsedValue);
         }
       })
       .catch(() => {
-        setCheckedIds([]);
+        setCheckState({});
       });
   }, []);
 
-  async function persist(nextIds: string[]) {
-    setCheckedIds(nextIds);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextIds));
+  async function persist(nextState: ChecklistState) {
+    setCheckState(nextState);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
   }
 
   async function toggleItem(id: string) {
-    const nextIds = checkedIds.includes(id)
-      ? checkedIds.filter((item) => item !== id)
-      : [...checkedIds, id];
+    const current = checkState[id];
+    const nextState = {
+      ...checkState,
+      [id]: {
+        checked: !current?.checked,
+        checkedAt: current?.checked ? null : new Date().toISOString()
+      }
+    };
 
-    await persist(nextIds);
+    await persist(nextState);
   }
 
   async function resetChecklist() {
-    await persist([]);
+    await persist({});
   }
 
   return (
@@ -99,9 +127,15 @@ export default function DeviceChecklistScreen() {
       <View style={styles.summaryCard}>
         <Text style={styles.summaryLabel}>점검 진행</Text>
         <Text style={styles.summaryValue}>{progressText}</Text>
+        <Text style={styles.summaryHint}>
+          {allCompleted
+            ? "갤럭시 실기기 MVP 흐름 점검이 모두 완료되었습니다."
+            : "각 항목을 완료하면 완료 시간이 함께 저장됩니다."}
+        </Text>
       </View>
       {CHECKLIST.map((item) => {
-        const checked = checkedIds.includes(item.id);
+        const record = checkState[item.id];
+        const checked = Boolean(record?.checked);
 
         return (
           <Pressable
@@ -117,6 +151,11 @@ export default function DeviceChecklistScreen() {
             <View style={styles.itemTextBlock}>
               <Text style={styles.itemTitle}>{item.title}</Text>
               <Text style={styles.itemDetail}>{item.detail}</Text>
+              {record?.checkedAt ? (
+                <Text style={styles.checkedAt}>
+                  완료 시간: {new Date(record.checkedAt).toLocaleString("ko-KR")}
+                </Text>
+              ) : null}
             </View>
           </Pressable>
         );
@@ -166,6 +205,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "800"
   },
+  summaryHint: {
+    color: "#DBEAFE",
+    fontSize: 13,
+    lineHeight: 19
+  },
   itemCard: {
     flexDirection: "row",
     gap: 12,
@@ -212,6 +256,11 @@ const styles = StyleSheet.create({
     color: "#57534E",
     fontSize: 13,
     lineHeight: 19
+  },
+  checkedAt: {
+    color: "#15803D",
+    fontSize: 12,
+    fontWeight: "800"
   },
   resetButton: {
     marginTop: 8,
