@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { sampleFields } from "@/src/mocks/sampleData";
 import { StatusChip } from "@/src/components/StatusChip";
@@ -22,6 +22,7 @@ export default function FieldDetailScreen() {
   const [status, setStatus] = useState(field.job?.status ?? "pending");
   const [busy, setBusy] = useState(false);
   const updateSampleJobStatus = useAppStore((state) => state.updateSampleJobStatus);
+  const addSampleJobPhoto = useAppStore((state) => state.addSampleJobPhoto);
   const photos = field.photos ?? [];
 
   useEffect(() => {
@@ -54,7 +55,25 @@ export default function FieldDetailScreen() {
 
   async function handlePhotoUpload() {
     if (!field.job?.id || field.job.id.startsWith("job-")) {
-      Alert.alert("Supabase 연결 필요", "실제 작업 데이터가 연결되면 사진 업로드가 저장됩니다.");
+      setBusy(true);
+
+      try {
+        const photo = await pickCompletionPhoto();
+
+        if (!photo || !field.job?.id) {
+          return;
+        }
+
+        addSampleJobPhoto(field.job.id, photo.uri);
+        setStatus("completed");
+        Alert.alert("샘플 사진 저장", "선택한 사진이 샘플 완료 사진 목록에 추가되었습니다.");
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "사진 선택에 실패했습니다.";
+        Alert.alert("사진 선택 실패", message);
+      } finally {
+        setBusy(false);
+      }
+
       return;
     }
 
@@ -142,6 +161,7 @@ export default function FieldDetailScreen() {
         ) : (
           photos.map((photo, index) => (
             <View key={photo.id} style={styles.photoCard}>
+              <Image source={{ uri: photo.photo_url }} style={styles.photoThumb} />
               <View style={styles.photoTextBlock}>
                 <Text style={styles.photoName}>사진 {index + 1}</Text>
                 <Text style={styles.photoMeta}>
@@ -276,6 +296,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: "#F8FAFC",
     padding: 12
+  },
+  photoThumb: {
+    width: 54,
+    height: 54,
+    borderRadius: 12,
+    backgroundColor: "#E7E5E4"
   },
   photoTextBlock: {
     flex: 1,
