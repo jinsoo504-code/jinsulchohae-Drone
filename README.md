@@ -80,6 +80,7 @@
 - 빌드: GitHub Actions `Build Android APK` 성공
 - 설치 안내: [`APK_INSTALL.md`](./APK_INSTALL.md)
 - 릴리스 노트: [`APK_RELEASE_NOTES.md`](./APK_RELEASE_NOTES.md)
+- 체크섬: [`APK_CHECKSUMS.md`](./APK_CHECKSUMS.md)
 
 ## 환경 변수
 

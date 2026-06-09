@@ -6,6 +6,7 @@
 
 - APK 파일: https://github.com/jinsoo504-code/jinsulchohae-drone-app/releases/download/apk-20260610-005859/jinsulchohae-drone-app-debug.apk
 - 파일명: `jinsulchohae-drone-app-debug.apk`
+- SHA-256: `14bb8a902dfc607c124b2f06baaecf48647cff3eaaec654dc5fc41c0bd6746a1`
 
 ## 설치 순서
 
