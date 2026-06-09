@@ -9,6 +9,57 @@ import {
   SprayTeam
 } from "@/src/types/domain";
 
+export type SupabaseHealthCheck = {
+  configured: boolean;
+  checkedAt: string;
+  tables: {
+    name: string;
+    ok: boolean;
+    count: number | null;
+    message: string | null;
+  }[];
+};
+
+const HEALTH_CHECK_TABLES = ["farmers", "fields", "spray_teams", "spray_jobs", "spray_photos"];
+
+export async function checkSupabaseConnection(): Promise<SupabaseHealthCheck> {
+  const checkedAt = new Date().toISOString();
+
+  if (!env.isSupabaseConfigured) {
+    return {
+      configured: false,
+      checkedAt,
+      tables: HEALTH_CHECK_TABLES.map((name) => ({
+        name,
+        ok: false,
+        count: null,
+        message: ".env에 Supabase URL과 anon key가 필요합니다."
+      }))
+    };
+  }
+
+  const tables = await Promise.all(
+    HEALTH_CHECK_TABLES.map(async (name) => {
+      const { count, error } = await supabase
+        .from(name)
+        .select("*", { count: "exact", head: true });
+
+      return {
+        name,
+        ok: !error,
+        count: count ?? null,
+        message: error?.message ?? null
+      };
+    })
+  );
+
+  return {
+    configured: true,
+    checkedAt,
+    tables
+  };
+}
+
 export async function fetchFields(): Promise<FieldWithRelations[]> {
   if (!env.isSupabaseConfigured) {
     throw new Error("Supabase 환경변수가 없어 샘플 데이터를 표시합니다.");

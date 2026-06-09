@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import {
+  SupabaseHealthCheck,
+  checkSupabaseConnection,
   createSprayTeam,
   fetchSprayTeams,
   updateSprayTeam
@@ -16,6 +18,8 @@ export default function AdminScreen() {
   const [teamPhone, setTeamPhone] = useState("");
   const [savingTeam, setSavingTeam] = useState(false);
   const [loadingTeams, setLoadingTeams] = useState(false);
+  const [checkingConnection, setCheckingConnection] = useState(false);
+  const [healthCheck, setHealthCheck] = useState<SupabaseHealthCheck | null>(null);
 
   useEffect(() => {
     refreshTeams();
@@ -46,6 +50,20 @@ export default function AdminScreen() {
     setTeamName(team.team_name);
     setManagerName(team.manager_name ?? "");
     setTeamPhone(team.phone ?? "");
+  }
+
+  async function handleCheckConnection() {
+    setCheckingConnection(true);
+
+    try {
+      const result = await checkSupabaseConnection();
+      setHealthCheck(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Supabase 연결 점검에 실패했습니다.";
+      Alert.alert("연결 점검 실패", message);
+    } finally {
+      setCheckingConnection(false);
+    }
   }
 
   async function handleCreateTeam() {
@@ -88,6 +106,46 @@ export default function AdminScreen() {
       <Pressable style={styles.button} onPress={() => router.push("/field/new")}>
         <Text style={styles.buttonText}>필지 등록 시작</Text>
       </Pressable>
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionHeaderText}>
+            <Text style={styles.sectionTitle}>Supabase 연결 점검</Text>
+            <Text style={styles.sectionCaption}>
+              실제 프로젝트 연결 후 필수 테이블 접근 여부를 확인합니다.
+            </Text>
+          </View>
+          <Pressable
+            style={styles.refreshButton}
+            onPress={handleCheckConnection}
+            disabled={checkingConnection}
+          >
+            <Text style={styles.refreshButtonText}>
+              {checkingConnection ? "점검 중" : "점검"}
+            </Text>
+          </Pressable>
+        </View>
+        {healthCheck ? (
+          <View style={styles.healthBox}>
+            <Text style={styles.healthSummary}>
+              {healthCheck.configured ? "Supabase 환경변수 있음" : "Supabase 환경변수 미설정"}
+            </Text>
+            <Text style={styles.healthTime}>
+              마지막 점검: {new Date(healthCheck.checkedAt).toLocaleString("ko-KR")}
+            </Text>
+            {healthCheck.tables.map((table) => (
+              <View key={table.name} style={styles.healthRow}>
+                <Text style={styles.healthTableName}>{table.name}</Text>
+                <Text style={[styles.healthStatus, table.ok ? styles.healthOk : styles.healthFail]}>
+                  {table.ok ? `정상 ${table.count ?? 0}건` : "확인 필요"}
+                </Text>
+                {table.message ? <Text style={styles.healthMessage}>{table.message}</Text> : null}
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.emptyText}>아직 연결 점검을 실행하지 않았습니다.</Text>
+        )}
+      </View>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{editingTeamId ? "방제팀 수정" : "방제팀 등록"}</Text>
         <Text style={styles.sectionCaption}>
@@ -253,6 +311,44 @@ const styles = StyleSheet.create({
     color: "#B45309",
     fontSize: 13,
     fontWeight: "700"
+  },
+  healthBox: {
+    gap: 10
+  },
+  healthSummary: {
+    color: "#14213D",
+    fontSize: 15,
+    fontWeight: "800"
+  },
+  healthTime: {
+    color: "#57534E",
+    fontSize: 12
+  },
+  healthRow: {
+    borderRadius: 14,
+    backgroundColor: "#F8FAFC",
+    padding: 12,
+    gap: 4
+  },
+  healthTableName: {
+    color: "#1C1917",
+    fontSize: 14,
+    fontWeight: "800"
+  },
+  healthStatus: {
+    fontSize: 13,
+    fontWeight: "800"
+  },
+  healthOk: {
+    color: "#15803D"
+  },
+  healthFail: {
+    color: "#B45309"
+  },
+  healthMessage: {
+    color: "#57534E",
+    fontSize: 12,
+    lineHeight: 17
   },
   teamCard: {
     borderRadius: 16,
