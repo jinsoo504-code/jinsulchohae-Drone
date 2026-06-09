@@ -106,6 +106,12 @@ export default function AdminScreen() {
       <Pressable style={styles.button} onPress={() => router.push("/field/new")}>
         <Text style={styles.buttonText}>필지 등록 시작</Text>
       </Pressable>
+      <Pressable
+        style={styles.checklistButton}
+        onPress={() => router.push("/device-checklist" as never)}
+      >
+        <Text style={styles.checklistButtonText}>갤럭시 실기기 점검표 열기</Text>
+      </Pressable>
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionHeaderText}>
@@ -241,6 +247,17 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#FFFFFF",
     fontWeight: "700"
+  },
+  checklistButton: {
+    marginTop: 12,
+    backgroundColor: "#ECFDF5",
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: "center"
+  },
+  checklistButtonText: {
+    color: "#166534",
+    fontWeight: "800"
   },
   section: {
     marginTop: 18,
