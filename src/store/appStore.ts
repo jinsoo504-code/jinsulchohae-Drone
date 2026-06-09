@@ -34,6 +34,7 @@ type AppState = {
   sampleFields: FieldWithRelations[];
   sampleTeams: SprayTeam[];
   setSelectedField: (field: FieldWithRelations | null) => void;
+  resetSampleData: () => void;
   addSampleTeam: (input: SampleTeamInput) => SprayTeam;
   updateSampleTeam: (teamId: string, input: SampleTeamInput) => void;
   addSampleField: (input: SampleFieldInput) => FieldWithRelations;
@@ -48,6 +49,12 @@ export const useAppStore = create<AppState>()(
       sampleFields,
       sampleTeams: getInitialSampleTeams(),
       setSelectedField: (field) => set({ selectedField: field }),
+      resetSampleData: () =>
+        set({
+          selectedField: null,
+          sampleFields,
+          sampleTeams: getInitialSampleTeams()
+        }),
       addSampleTeam: (input) => {
         const now = new Date().toISOString();
         const team: SprayTeam = {

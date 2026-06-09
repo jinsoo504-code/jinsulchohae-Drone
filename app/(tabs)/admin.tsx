@@ -25,6 +25,7 @@ export default function AdminScreen() {
   const sampleTeams = useAppStore((state) => state.sampleTeams);
   const addSampleTeam = useAppStore((state) => state.addSampleTeam);
   const updateSampleTeam = useAppStore((state) => state.updateSampleTeam);
+  const resetSampleData = useAppStore((state) => state.resetSampleData);
 
   useEffect(() => {
     refreshTeams();
@@ -122,6 +123,25 @@ export default function AdminScreen() {
     }
   }
 
+  function handleResetSampleData() {
+    Alert.alert(
+      "샘플 데이터 초기화",
+      "앱에 저장된 샘플 방제팀, 농가, 필지, 작업 상태, 사진 목록을 처음 상태로 되돌립니다. 실제 Supabase 데이터는 변경하지 않습니다.",
+      [
+        { text: "취소", style: "cancel" },
+        {
+          text: "초기화",
+          style: "destructive",
+          onPress: () => {
+            resetSampleData();
+            resetTeamForm();
+            Alert.alert("초기화 완료", "샘플 데이터가 처음 상태로 복구되었습니다.");
+          }
+        }
+      ]
+    );
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.heading}>관리자 화면</Text>
@@ -135,6 +155,15 @@ export default function AdminScreen() {
       >
         <Text style={styles.checklistButtonText}>갤럭시 실기기 점검표 열기</Text>
       </Pressable>
+      <View style={styles.warningSection}>
+        <Text style={styles.warningTitle}>샘플 데이터 초기화</Text>
+        <Text style={styles.warningCaption}>
+          갤럭시에서 등록, 배정, 상태 변경, 사진 테스트를 반복할 때 샘플 데이터를 처음 상태로 되돌립니다.
+        </Text>
+        <Pressable style={styles.dangerButton} onPress={handleResetSampleData}>
+          <Text style={styles.dangerButtonText}>샘플 데이터 초기화</Text>
+        </Pressable>
+      </View>
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionHeaderText}>
@@ -288,6 +317,35 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     gap: 12
+  },
+  warningSection: {
+    marginTop: 18,
+    backgroundColor: "#FFF7ED",
+    borderRadius: 20,
+    padding: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: "#FDBA74"
+  },
+  warningTitle: {
+    color: "#9A3412",
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  warningCaption: {
+    color: "#7C2D12",
+    fontSize: 14,
+    lineHeight: 20
+  },
+  dangerButton: {
+    backgroundColor: "#C2410C",
+    borderRadius: 16,
+    paddingVertical: 15,
+    alignItems: "center"
+  },
+  dangerButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "800"
   },
   sectionTitle: {
     color: "#14213D",
