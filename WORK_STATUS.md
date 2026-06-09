@@ -1,6 +1,6 @@
 # 드론방제앱 작업 진행판
 
-마지막 갱신: 2026-06-10 01:29:30 +09:00
+마지막 갱신: 2026-06-10 01:32:00 +09:00
 
 ## 현재 목표
 
@@ -50,6 +50,7 @@
 - LAN QR 연결 실패 시 사용할 갤럭시 터널 실행 명령 추가
 - 갤럭시 터널 실행용 `@expo/ngrok` 의존성 고정
 - GitHub `jinsulchohae-drone-app` 저장소에 갤럭시 설치용 APK 릴리스 업로드 완료
+- 갤럭시 APK 다운로드/설치/권한 문제 해결 문서 `APK_INSTALL.md` 추가
 - Android/iOS 실제 지도와 웹 목록형 지도 미리보기 분리
 - Expo SDK 의존성 정리
 - `npm run typecheck` 통과
@@ -67,6 +68,7 @@
 - APK 릴리스: https://github.com/jinsoo504-code/jinsulchohae-drone-app/releases/tag/apk-20260610-005859
 - APK 파일: https://github.com/jinsoo504-code/jinsulchohae-drone-app/releases/download/apk-20260610-005859/jinsulchohae-drone-app-debug.apk
 - 빌드 상태: GitHub Actions `Build Android APK` 성공
+- 설치 안내: `APK_INSTALL.md`
 
 ## 최신 푸시 상태
 

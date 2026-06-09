@@ -6,6 +6,8 @@
 
 갤럭시 Expo Go 실기기 테스트 절차는 [`GALAXY_TEST.md`](./GALAXY_TEST.md)에서 확인합니다.
 
+갤럭시 APK 설치 절차는 [`APK_INSTALL.md`](./APK_INSTALL.md)에서 확인합니다.
+
 ## 현재 범위
 
 - Expo 기반 React Native 모바일 앱 분리
@@ -43,6 +45,7 @@
 - LAN QR 연결 실패 시 사용할 갤럭시 터널 실행 명령 추가
 - 갤럭시 터널 실행용 `@expo/ngrok` 의존성 고정
 - GitHub `jinsulchohae-drone-app` 저장소에 갤럭시 설치용 APK 릴리스 업로드 완료
+- 갤럭시 APK 다운로드/설치/권한 문제 해결 문서 추가
 - Android/iOS는 실제 지도, 웹은 목록형 지도 미리보기로 분리
 - Expo 웹 번들 생성 확인 완료
 - Expo 웹 서버 실행 및 `localhost` 응답 확인 완료
@@ -75,6 +78,7 @@
 - 릴리스: https://github.com/jinsoo504-code/jinsulchohae-drone-app/releases/tag/apk-20260610-005859
 - APK 다운로드: https://github.com/jinsoo504-code/jinsulchohae-drone-app/releases/download/apk-20260610-005859/jinsulchohae-drone-app-debug.apk
 - 빌드: GitHub Actions `Build Android APK` 성공
+- 설치 안내: [`APK_INSTALL.md`](./APK_INSTALL.md)
 
 ## 환경 변수
 
