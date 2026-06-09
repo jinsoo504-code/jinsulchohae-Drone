@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
@@ -14,6 +14,7 @@ type ChecklistItem = {
 type ChecklistRecord = {
   checked: boolean;
   checkedAt: string | null;
+  memo?: string;
 };
 
 type ChecklistState = Record<string, ChecklistRecord>;
@@ -86,7 +87,8 @@ export default function DeviceChecklistScreen() {
               parsedValue.reduce<ChecklistState>((acc, id) => {
                 acc[id] = {
                   checked: true,
-                  checkedAt: null
+                  checkedAt: null,
+                  memo: ""
                 };
                 return acc;
               }, {})
@@ -114,6 +116,22 @@ export default function DeviceChecklistScreen() {
       [id]: {
         checked: !current?.checked,
         checkedAt: current?.checked ? null : new Date().toISOString()
+      }
+    };
+
+    await persist(nextState);
+  }
+
+  async function updateMemo(id: string, memo: string) {
+    const current = checkState[id] ?? {
+      checked: false,
+      checkedAt: null
+    };
+    const nextState = {
+      ...checkState,
+      [id]: {
+        ...current,
+        memo
       }
     };
 
@@ -152,8 +170,9 @@ export default function DeviceChecklistScreen() {
       const checkedAt = record?.checkedAt
         ? ` / ${new Date(record.checkedAt).toLocaleString("ko-KR")}`
         : "";
+      const memo = record?.memo?.trim() ? ` / 메모: ${record.memo.trim()}` : "";
 
-      return `- ${item.title}: ${status}${checkedAt}`;
+      return `- ${item.title}: ${status}${checkedAt}${memo}`;
     });
 
     return [
@@ -224,26 +243,36 @@ export default function DeviceChecklistScreen() {
         const checked = Boolean(record?.checked);
 
         return (
-          <Pressable
+          <View
             key={item.id}
             style={[styles.itemCard, checked && styles.itemCardDone]}
-            onPress={() => toggleItem(item.id)}
           >
-            <View style={[styles.checkbox, checked && styles.checkboxDone]}>
-              <Text style={[styles.checkboxText, checked && styles.checkboxTextDone]}>
-                {checked ? "✓" : ""}
-              </Text>
+            <View style={styles.itemTopRow}>
+              <Pressable style={styles.checkArea} onPress={() => toggleItem(item.id)}>
+                <View style={[styles.checkbox, checked && styles.checkboxDone]}>
+                  <Text style={[styles.checkboxText, checked && styles.checkboxTextDone]}>
+                    {checked ? "✓" : ""}
+                  </Text>
+                </View>
+                <View style={styles.itemTextBlock}>
+                  <Text style={styles.itemTitle}>{item.title}</Text>
+                  <Text style={styles.itemDetail}>{item.detail}</Text>
+                  {record?.checkedAt ? (
+                    <Text style={styles.checkedAt}>
+                      완료 시간: {new Date(record.checkedAt).toLocaleString("ko-KR")}
+                    </Text>
+                  ) : null}
+                </View>
+              </Pressable>
             </View>
-            <View style={styles.itemTextBlock}>
-              <Text style={styles.itemTitle}>{item.title}</Text>
-              <Text style={styles.itemDetail}>{item.detail}</Text>
-              {record?.checkedAt ? (
-                <Text style={styles.checkedAt}>
-                  완료 시간: {new Date(record.checkedAt).toLocaleString("ko-KR")}
-                </Text>
-              ) : null}
-            </View>
-          </Pressable>
+            <TextInput
+              style={styles.memoInput}
+              placeholder="현장 메모: 문제, 확인 내용, 보완점"
+              multiline
+              value={record?.memo ?? ""}
+              onChangeText={(value) => updateMemo(item.id, value)}
+            />
+          </View>
         );
       })}
       <Pressable style={styles.resetButton} onPress={resetChecklist}>
@@ -351,7 +380,6 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   },
   itemCard: {
-    flexDirection: "row",
     gap: 12,
     backgroundColor: "#FFFFFF",
     borderRadius: 18,
@@ -362,6 +390,14 @@ const styles = StyleSheet.create({
   itemCardDone: {
     borderColor: "#86EFAC",
     backgroundColor: "#F0FDF4"
+  },
+  itemTopRow: {
+    flexDirection: "row"
+  },
+  checkArea: {
+    flex: 1,
+    flexDirection: "row",
+    gap: 12
   },
   checkbox: {
     width: 28,
@@ -401,6 +437,16 @@ const styles = StyleSheet.create({
     color: "#15803D",
     fontSize: 12,
     fontWeight: "800"
+  },
+  memoInput: {
+    minHeight: 52,
+    borderRadius: 14,
+    backgroundColor: "#F8FAFC",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: "#1C1917",
+    fontSize: 13,
+    textAlignVertical: "top"
   },
   resetButton: {
     marginTop: 8,
