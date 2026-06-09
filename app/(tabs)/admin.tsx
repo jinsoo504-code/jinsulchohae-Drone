@@ -1,13 +1,52 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
-import { createSprayTeam } from "@/src/services/fieldService";
+import {
+  createSprayTeam,
+  fetchSprayTeams,
+  updateSprayTeam
+} from "@/src/services/fieldService";
+import { SprayTeam } from "@/src/types/domain";
 
 export default function AdminScreen() {
+  const [teams, setTeams] = useState<SprayTeam[]>([]);
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [teamName, setTeamName] = useState("");
   const [managerName, setManagerName] = useState("");
   const [teamPhone, setTeamPhone] = useState("");
   const [savingTeam, setSavingTeam] = useState(false);
+  const [loadingTeams, setLoadingTeams] = useState(false);
+
+  useEffect(() => {
+    refreshTeams();
+  }, []);
+
+  async function refreshTeams() {
+    setLoadingTeams(true);
+
+    try {
+      const nextTeams = await fetchSprayTeams();
+      setTeams(nextTeams);
+    } catch {
+      setTeams([]);
+    } finally {
+      setLoadingTeams(false);
+    }
+  }
+
+  function resetTeamForm() {
+    setEditingTeamId(null);
+    setTeamName("");
+    setManagerName("");
+    setTeamPhone("");
+  }
+
+  function handleEditTeam(team: SprayTeam) {
+    setEditingTeamId(team.id);
+    setTeamName(team.team_name);
+    setManagerName(team.manager_name ?? "");
+    setTeamPhone(team.phone ?? "");
+  }
 
   async function handleCreateTeam() {
     if (!teamName.trim()) {
@@ -18,20 +57,22 @@ export default function AdminScreen() {
     setSavingTeam(true);
 
     try {
-      const { error } = await createSprayTeam({
+      const payload = {
         team_name: teamName.trim(),
         manager_name: managerName.trim() || null,
         phone: teamPhone.trim() || null
-      });
+      };
+      const { error } = editingTeamId
+        ? await updateSprayTeam(editingTeamId, payload)
+        : await createSprayTeam(payload);
 
       if (error) {
         throw error;
       }
 
-      setTeamName("");
-      setManagerName("");
-      setTeamPhone("");
-      Alert.alert("저장 완료", "방제팀이 등록되었습니다.");
+      resetTeamForm();
+      await refreshTeams();
+      Alert.alert("저장 완료", editingTeamId ? "방제팀 정보가 수정되었습니다." : "방제팀이 등록되었습니다.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "방제팀 저장에 실패했습니다.";
       Alert.alert("저장 실패", message);
@@ -48,7 +89,7 @@ export default function AdminScreen() {
         <Text style={styles.buttonText}>필지 등록 시작</Text>
       </Pressable>
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>방제팀 등록</Text>
+        <Text style={styles.sectionTitle}>{editingTeamId ? "방제팀 수정" : "방제팀 등록"}</Text>
         <Text style={styles.sectionCaption}>
           등록한 팀은 필지 등록 화면에서 바로 작업 담당팀으로 선택할 수 있습니다.
         </Text>
@@ -73,9 +114,40 @@ export default function AdminScreen() {
         />
         <Pressable style={styles.secondaryButton} onPress={handleCreateTeam} disabled={savingTeam}>
           <Text style={styles.secondaryButtonText}>
-            {savingTeam ? "방제팀 저장 중..." : "방제팀 저장"}
+            {savingTeam ? "방제팀 저장 중..." : editingTeamId ? "방제팀 수정 저장" : "방제팀 저장"}
           </Text>
         </Pressable>
+        {editingTeamId ? (
+          <Pressable style={styles.cancelButton} onPress={resetTeamForm} disabled={savingTeam}>
+            <Text style={styles.cancelButtonText}>수정 취소</Text>
+          </Pressable>
+        ) : null}
+      </View>
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionHeaderText}>
+            <Text style={styles.sectionTitle}>방제팀 목록</Text>
+            <Text style={styles.sectionCaption}>팀을 눌러 담당자와 연락처를 수정합니다.</Text>
+          </View>
+          <Pressable style={styles.refreshButton} onPress={refreshTeams} disabled={loadingTeams}>
+            <Text style={styles.refreshButtonText}>{loadingTeams ? "확인 중" : "새로고침"}</Text>
+          </Pressable>
+        </View>
+        {teams.length === 0 ? (
+          <Text style={styles.emptyText}>등록된 방제팀이 없거나 Supabase 연결 전입니다.</Text>
+        ) : (
+          teams.map((team) => (
+            <Pressable
+              key={team.id}
+              style={[styles.teamCard, editingTeamId === team.id && styles.teamCardActive]}
+              onPress={() => handleEditTeam(team)}
+            >
+              <Text style={styles.teamName}>{team.team_name}</Text>
+              <Text style={styles.teamMeta}>담당자: {team.manager_name ?? "미입력"}</Text>
+              <Text style={styles.teamMeta}>연락처: {team.phone ?? "미입력"}</Text>
+            </Pressable>
+          ))
+        )}
       </View>
     </ScrollView>
   );
@@ -145,5 +217,61 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: "#075985",
     fontWeight: "800"
+  },
+  cancelButton: {
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: "center",
+    backgroundColor: "#F5F5F4"
+  },
+  cancelButtonText: {
+    color: "#57534E",
+    fontWeight: "800"
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+    alignItems: "flex-start"
+  },
+  sectionHeaderText: {
+    flex: 1,
+    gap: 4
+  },
+  refreshButton: {
+    borderRadius: 999,
+    backgroundColor: "#E7E5E4",
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  refreshButtonText: {
+    color: "#44403C",
+    fontWeight: "800",
+    fontSize: 12
+  },
+  emptyText: {
+    color: "#B45309",
+    fontSize: 13,
+    fontWeight: "700"
+  },
+  teamCard: {
+    borderRadius: 16,
+    padding: 14,
+    gap: 5,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 2,
+    borderColor: "transparent"
+  },
+  teamCardActive: {
+    borderColor: "#14213D"
+  },
+  teamName: {
+    color: "#14213D",
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  teamMeta: {
+    color: "#57534E",
+    fontSize: 13
   }
 });
