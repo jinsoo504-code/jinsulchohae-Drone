@@ -1,6 +1,6 @@
 # 드론방제앱 작업 진행판
 
-마지막 갱신: 2026-06-10 01:38:04 +09:00
+마지막 갱신: 2026-06-10 01:41:04 +09:00
 
 ## 현재 목표
 
@@ -53,6 +53,7 @@
 - 갤럭시 APK 다운로드/설치/권한 문제 해결 문서 `APK_INSTALL.md` 추가
 - 갤럭시 APK 릴리스 노트 `APK_RELEASE_NOTES.md` 추가 및 GitHub 릴리스 본문 보강
 - APK SHA-256 체크섬 문서와 릴리스 자산 `APK_CHECKSUMS.txt` 추가
+- 릴리스 APK 실제 다운로드 및 SHA-256 일치 검증 완료
 - Android/iOS 실제 지도와 웹 목록형 지도 미리보기 분리
 - Expo SDK 의존성 정리
 - `npm run typecheck` 통과
@@ -73,6 +74,7 @@
 - 설치 안내: `APK_INSTALL.md`
 - 릴리스 노트: `APK_RELEASE_NOTES.md`
 - 체크섬: `APK_CHECKSUMS.md`, `APK_CHECKSUMS.txt`
+- 다운로드 검증: `APK_DOWNLOAD_VERIFICATION.md`
 
 ## 최신 푸시 상태
 
