@@ -1,6 +1,6 @@
 # 드론방제앱 작업 진행판
 
-마지막 갱신: 2026-06-10 00:08:05 +09:00
+마지막 갱신: 2026-06-10 00:08:59 +09:00
 
 ## 현재 목표
 
@@ -52,7 +52,7 @@
 
 ## 최신 푸시 상태
 
-- 최신 커밋: `c9c9f1e Add sample data reset flow`
+- 최신 커밋: `f8f564a Update work status after sample reset`
 - 브랜치: `master`
 - 원격 상태: `origin/master`와 동기화 완료
 
