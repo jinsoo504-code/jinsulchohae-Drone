@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import * as Location from "expo-location";
 import { router } from "expo-router";
+import { env } from "@/src/lib/env";
 import {
   createFarmer,
   createField,
@@ -9,6 +10,7 @@ import {
   fetchSprayTeams,
   searchFarmers
 } from "@/src/services/fieldService";
+import { useAppStore } from "@/src/store/appStore";
 import { Farmer, GeoJsonPolygon, SprayTeam } from "@/src/types/domain";
 
 export default function NewFieldScreen() {
@@ -31,14 +33,22 @@ export default function NewFieldScreen() {
   const [saving, setSaving] = useState(false);
   const [searching, setSearching] = useState(false);
   const [locating, setLocating] = useState(false);
+  const sampleFields = useAppStore((state) => state.sampleFields);
+  const sampleTeams = useAppStore((state) => state.sampleTeams);
+  const addSampleField = useAppStore((state) => state.addSampleField);
 
   useEffect(() => {
+    if (!env.isSupabaseConfigured) {
+      setTeams(sampleTeams);
+      return;
+    }
+
     fetchSprayTeams()
       .then(setTeams)
       .catch(() => {
         setTeams([]);
       });
-  }, []);
+  }, [sampleTeams]);
 
   async function handleFarmerSearch() {
     const keyword = farmerPhone.trim() || farmerName.trim();
@@ -52,6 +62,29 @@ export default function NewFieldScreen() {
     setSelectedFarmer(null);
 
     try {
+      if (!env.isSupabaseConfigured) {
+        const matches = sampleFields
+          .map((item) => item.farmer)
+          .filter(Boolean)
+          .filter(
+            (farmer, index, list) =>
+              list.findIndex((item) => item?.id === farmer?.id) === index
+          )
+          .filter((farmer) => {
+            const name = farmer?.name ?? "";
+            const phone = farmer?.phone ?? "";
+            return name.includes(keyword) || phone.includes(keyword);
+          }) as Farmer[];
+
+        setFarmerMatches(matches);
+
+        if (matches.length === 0) {
+          Alert.alert("샘플 검색 결과 없음", "저장 시 새 샘플 농가로 등록됩니다.");
+        }
+
+        return;
+      }
+
       const matches = await searchFarmers(keyword);
       setFarmerMatches(matches);
 
@@ -163,6 +196,26 @@ export default function NewFieldScreen() {
         type: "Polygon",
         coordinates: [coordinates]
       };
+
+      if (!env.isSupabaseConfigured) {
+        addSampleField({
+          farmer: selectedFarmer,
+          farmerName: farmerName.trim(),
+          farmerPhone: farmerPhone.trim() || null,
+          address: address.trim() || null,
+          fieldName: fieldName.trim(),
+          centerLat: lat,
+          centerLng: lng,
+          polygon: polygon_geojson,
+          cropName: cropName.trim() || null,
+          scheduledDate: scheduledDate.trim() || null,
+          teamId: selectedTeamId
+        });
+
+        Alert.alert("샘플 저장 완료", "샘플 필지와 기본 작업이 생성되었습니다.");
+        router.replace("/(tabs)/map");
+        return;
+      }
 
       const farmer = selectedFarmer;
       const farmerResult = farmer

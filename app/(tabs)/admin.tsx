@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
+import { env } from "@/src/lib/env";
 import {
   SupabaseHealthCheck,
   checkSupabaseConnection,
@@ -8,6 +9,7 @@ import {
   fetchSprayTeams,
   updateSprayTeam
 } from "@/src/services/fieldService";
+import { useAppStore } from "@/src/store/appStore";
 import { SprayTeam } from "@/src/types/domain";
 
 export default function AdminScreen() {
@@ -20,12 +22,20 @@ export default function AdminScreen() {
   const [loadingTeams, setLoadingTeams] = useState(false);
   const [checkingConnection, setCheckingConnection] = useState(false);
   const [healthCheck, setHealthCheck] = useState<SupabaseHealthCheck | null>(null);
+  const sampleTeams = useAppStore((state) => state.sampleTeams);
+  const addSampleTeam = useAppStore((state) => state.addSampleTeam);
+  const updateSampleTeam = useAppStore((state) => state.updateSampleTeam);
 
   useEffect(() => {
     refreshTeams();
-  }, []);
+  }, [sampleTeams]);
 
   async function refreshTeams() {
+    if (!env.isSupabaseConfigured) {
+      setTeams(sampleTeams);
+      return;
+    }
+
     setLoadingTeams(true);
 
     try {
@@ -80,6 +90,19 @@ export default function AdminScreen() {
         manager_name: managerName.trim() || null,
         phone: teamPhone.trim() || null
       };
+
+      if (!env.isSupabaseConfigured) {
+        if (editingTeamId) {
+          updateSampleTeam(editingTeamId, payload);
+        } else {
+          addSampleTeam(payload);
+        }
+
+        resetTeamForm();
+        Alert.alert("샘플 저장 완료", editingTeamId ? "샘플 방제팀이 수정되었습니다." : "샘플 방제팀이 등록되었습니다.");
+        return;
+      }
+
       const { error } = editingTeamId
         ? await updateSprayTeam(editingTeamId, payload)
         : await createSprayTeam(payload);
