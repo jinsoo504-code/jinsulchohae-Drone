@@ -7,14 +7,20 @@
 1. PC와 갤럭시를 같은 Wi-Fi에 연결합니다.
 2. 갤럭시에 `Expo Go` 앱을 설치합니다.
 3. PC에서 `mobile-drone-app` 폴더로 이동합니다.
-4. 아래 명령을 실행합니다.
+4. 아래 사전점검 명령으로 LAN 주소, `.env`, adb 감지 여부를 확인합니다.
+
+```powershell
+npm run galaxy:preflight
+```
+
+5. 아래 명령을 실행합니다.
 
 ```powershell
 npm run start:galaxy
 ```
 
-5. 터미널에 표시되는 QR 코드를 갤럭시 Expo Go로 스캔합니다.
-6. 앱이 열리면 로그인 화면에서 `샘플 데이터로 둘러보기`를 누릅니다.
+6. 터미널에 표시되는 QR 코드를 갤럭시 Expo Go로 스캔합니다.
+7. 앱이 열리면 로그인 화면에서 `샘플 데이터로 둘러보기`를 누릅니다.
 
 ## 샘플 모드 점검 순서
 
@@ -42,6 +48,7 @@ npm run start:galaxy
 - 이 PC에서는 `adb` 명령이 감지되지 않았습니다.
 - 따라서 USB 연결 기반 `npm run android` 검증보다 Expo Go LAN 실행을 우선합니다.
 - Android Studio/Platform Tools 설치 후에는 `adb devices`로 기기 인식 여부를 확인할 수 있습니다.
+- `npm run galaxy:preflight`에서 LAN 주소가 표시되면 갤럭시와 같은 Wi-Fi 또는 같은 네트워크인지 비교합니다.
 
 ## 문제 발생 시
 
