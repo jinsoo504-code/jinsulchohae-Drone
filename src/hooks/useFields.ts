@@ -30,7 +30,7 @@ export function useFields(): UseFieldsResult {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [sampleFields]);
 
   useEffect(() => {
     refresh();

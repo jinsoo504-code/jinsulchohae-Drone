@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import { sampleFields } from "@/src/mocks/sampleData";
+import { router, useLocalSearchParams } from "expo-router";
 import { StatusChip } from "@/src/components/StatusChip";
 import { JOB_STATUS_LABELS } from "@/src/constants/status";
+import { env } from "@/src/lib/env";
 import { openNavigation } from "@/src/services/navigationService";
 import { updateJobStatus } from "@/src/services/fieldService";
 import { pickCompletionPhoto, uploadJobPhoto } from "@/src/services/photoService";
@@ -16,23 +16,31 @@ export default function FieldDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { fields, refresh } = useFields();
   const field = useMemo(
-    () => fields.find((item) => item.field.id === id) ?? sampleFields[0],
+    () => fields.find((item) => item.field.id === id),
     [fields, id]
   );
-  const [status, setStatus] = useState(field.job?.status ?? "pending");
+  const [status, setStatus] = useState(field?.job?.status ?? "pending");
   const [busy, setBusy] = useState(false);
   const updateSampleJobStatus = useAppStore((state) => state.updateSampleJobStatus);
   const addSampleJobPhoto = useAppStore((state) => state.addSampleJobPhoto);
-  const photos = field.photos ?? [];
+  const photos = field?.photos ?? [];
+  const isSampleJob =
+    !env.isSupabaseConfigured ||
+    field?.job?.id.startsWith("job-") ||
+    field?.job?.id.startsWith("sample-job-");
 
   useEffect(() => {
-    setStatus(field.job?.status ?? "pending");
-  }, [field.job?.status]);
+    setStatus(field?.job?.status ?? "pending");
+  }, [field?.job?.status]);
 
   async function handleStatusChange(nextStatus: JobStatus) {
+    if (!field) {
+      return;
+    }
+
     setStatus(nextStatus);
 
-    if (!field.job?.id || field.job.id.startsWith("job-")) {
+    if (!field.job?.id || isSampleJob) {
       if (field.job?.id) {
         updateSampleJobStatus(field.job.id, nextStatus);
       }
@@ -54,7 +62,11 @@ export default function FieldDetailScreen() {
   }
 
   async function handlePhotoUpload() {
-    if (!field.job?.id || field.job.id.startsWith("job-")) {
+    if (!field) {
+      return;
+    }
+
+    if (!field.job?.id || isSampleJob) {
       setBusy(true);
 
       try {
@@ -96,6 +108,20 @@ export default function FieldDetailScreen() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (!field) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>필지를 찾을 수 없습니다</Text>
+        <Text style={styles.subtitle}>
+          샘플 데이터 초기화 또는 동기화 후 사라진 필지입니다. 지도나 작업 목록에서 다시 선택해 주세요.
+        </Text>
+        <Pressable style={styles.primaryButton} onPress={() => router.back()}>
+          <Text style={styles.primaryButtonText}>이전 화면으로 이동</Text>
+        </Pressable>
+      </ScrollView>
+    );
   }
 
   return (

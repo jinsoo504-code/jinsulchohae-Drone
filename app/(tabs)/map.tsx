@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { FieldBottomSheet } from "@/src/components/FieldBottomSheet";
 import { MapAdapter } from "@/src/lib/map/MapAdapter";
-import { sampleFields } from "@/src/mocks/sampleData";
 import { useAppStore } from "@/src/store/appStore";
 import { useFields } from "@/src/hooks/useFields";
 
@@ -13,10 +12,19 @@ export default function MapScreen() {
   const setSelectedField = useAppStore((state) => state.setSelectedField);
 
   useEffect(() => {
-    if (!selectedField && fields.length > 0) {
+    if (fields.length === 0) {
+      setSelectedField(null);
+      return;
+    }
+
+    const selectedStillExists = fields.some((item) => item.field.id === selectedField?.field.id);
+
+    if (!selectedField || !selectedStillExists) {
       setSelectedField(fields[0]);
     }
   }, [fields, selectedField, setSelectedField]);
+
+  const mapCenter = selectedField ?? fields[0];
 
   return (
     <View style={styles.container}>
@@ -28,8 +36,8 @@ export default function MapScreen() {
           setSelectedField(found);
         }}
         initialRegion={{
-          latitude: sampleFields[0].field.center_lat,
-          longitude: sampleFields[0].field.center_lng,
+          latitude: mapCenter?.field.center_lat ?? 34.6118,
+          longitude: mapCenter?.field.center_lng ?? 127.2857,
           latitudeDelta: 0.03,
           longitudeDelta: 0.03
         }}
