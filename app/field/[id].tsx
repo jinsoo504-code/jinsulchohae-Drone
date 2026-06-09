@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { sampleFields } from "@/src/mocks/sampleData";
 import { StatusChip } from "@/src/components/StatusChip";
@@ -20,6 +20,7 @@ export default function FieldDetailScreen() {
   );
   const [status, setStatus] = useState(field.job?.status ?? "pending");
   const [busy, setBusy] = useState(false);
+  const photos = field.photos ?? [];
 
   async function handleStatusChange(nextStatus: JobStatus) {
     setStatus(nextStatus);
@@ -86,6 +87,20 @@ export default function FieldDetailScreen() {
         <Text style={styles.label}>담당팀</Text>
         <Text style={styles.value}>{field.team?.team_name ?? "배정 전"}</Text>
       </View>
+      <View style={styles.infoGrid}>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoLabel}>작업 예정일</Text>
+          <Text style={styles.infoValue}>{field.job?.scheduled_date ?? "미정"}</Text>
+        </View>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoLabel}>완료 사진</Text>
+          <Text style={styles.infoValue}>{photos.length}장</Text>
+        </View>
+      </View>
+      <View style={styles.section}>
+        <Text style={styles.label}>작업 메모</Text>
+        <Text style={styles.value}>{field.job?.memo ?? field.field.memo ?? "메모 없음"}</Text>
+      </View>
       <Pressable
         style={styles.primaryButton}
         onPress={() =>
@@ -111,6 +126,29 @@ export default function FieldDetailScreen() {
       <Pressable style={styles.secondaryButton} onPress={handlePhotoUpload} disabled={busy}>
         <Text style={styles.secondaryButtonText}>사진 업로드</Text>
       </Pressable>
+      <View style={styles.photoSection}>
+        <Text style={styles.photoTitle}>완료 사진 확인</Text>
+        {photos.length === 0 ? (
+          <Text style={styles.photoEmpty}>아직 업로드된 완료 사진이 없습니다.</Text>
+        ) : (
+          photos.map((photo, index) => (
+            <View key={photo.id} style={styles.photoCard}>
+              <View style={styles.photoTextBlock}>
+                <Text style={styles.photoName}>사진 {index + 1}</Text>
+                <Text style={styles.photoMeta}>
+                  {new Date(photo.uploaded_at).toLocaleString("ko-KR")}
+                </Text>
+              </View>
+              <Pressable
+                style={styles.photoButton}
+                onPress={() => Linking.openURL(photo.photo_url)}
+              >
+                <Text style={styles.photoButtonText}>열기</Text>
+              </Pressable>
+            </View>
+          ))
+        )}
+      </View>
       <View style={styles.section}>
         <Text style={styles.label}>상태 변경 빠른 선택</Text>
         <View style={styles.statusList}>
@@ -165,6 +203,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#1C1917"
   },
+  infoGrid: {
+    flexDirection: "row",
+    gap: 10
+  },
+  infoCard: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 14,
+    gap: 6
+  },
+  infoLabel: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#78716C"
+  },
+  infoValue: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: "#14213D"
+  },
   primaryButton: {
     backgroundColor: "#14213D",
     borderRadius: 16,
@@ -184,6 +243,53 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: "#14213D",
     fontWeight: "700"
+  },
+  photoSection: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 16,
+    gap: 10
+  },
+  photoTitle: {
+    color: "#14213D",
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  photoEmpty: {
+    color: "#78716C",
+    fontSize: 14
+  },
+  photoCard: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 14,
+    backgroundColor: "#F8FAFC",
+    padding: 12
+  },
+  photoTextBlock: {
+    flex: 1,
+    gap: 4
+  },
+  photoName: {
+    color: "#1C1917",
+    fontSize: 15,
+    fontWeight: "800"
+  },
+  photoMeta: {
+    color: "#57534E",
+    fontSize: 12
+  },
+  photoButton: {
+    backgroundColor: "#E0F2FE",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 9
+  },
+  photoButtonText: {
+    color: "#075985",
+    fontWeight: "800"
   },
   statusList: {
     flexDirection: "row",
