@@ -51,5 +51,8 @@ if (!adbAvailable) {
 }
 
 console.log("");
-console.log("다음 실행 명령:");
+console.log("기본 실행 명령:");
 console.log("npm run start:galaxy");
+console.log("");
+console.log("LAN QR 연결이 안 될 때 대안:");
+console.log("npm run start:galaxy:tunnel");
