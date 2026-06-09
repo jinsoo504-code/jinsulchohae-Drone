@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Drone Field Manager",
+    "slug": "mobile-drone-app",
+    "scheme": "dronefieldmanager",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jinsulchohae.mobiledroneapp",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "방제 완료 사진 업로드를 위해 사진 접근 권한이 필요합니다.",
+        "NSCameraUsageDescription": "방제 완료 사진 촬영을 위해 카메라 권한이 필요합니다.",
+        "NSLocationWhenInUseUsageDescription": "필지 위치 확인과 내비게이션 연결을 위해 위치 권한이 필요합니다."
+      }
+    },
+    "android": {
+      "package": "com.jinsulchohae.mobiledroneapp",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-image-picker",
+      "expo-location"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

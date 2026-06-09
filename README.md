@@ -1,0 +1,76 @@
+# mobile-drone-app
+
+농가와 드론방제팀이 함께 사용하는 모바일 필지관리 앱의 1차 MVP 작업 폴더입니다.
+
+## 현재 범위
+
+- Expo 기반 React Native 모바일 앱 분리
+- Supabase Auth, Database, Realtime, Storage 연동 골격
+- 지도 polygon 표시 구조
+- 작업 상태 변경 구조
+- 방제 완료 사진 업로드 서비스 구조
+- 내비게이션 앱 연결 구조
+
+## 현재 상태
+
+- 기존 Windows 앱과 분리된 `mobile-drone-app` 폴더 생성 완료
+- `.env` 대신 `.env.example`만 생성 완료
+- Supabase anon key만 사용하는 클라이언트 구조 반영
+- 지도 공급자 교체를 고려한 `MapAdapter` 구조 반영
+- MVP 화면 뼈대 작성 완료
+- 실제 패키지 설치와 실행은 아직 미진행
+
+## 실행 준비
+
+1. `mobile-drone-app` 폴더로 이동
+2. `.env.example`를 참고해 `.env`를 직접 생성
+3. Supabase URL과 anon key 입력
+4. 패키지 설치: `npm install`
+5. 갤럭시에서 Expo Go로 실행: `npm start`
+6. Android 네이티브 빌드가 필요하면: `npm run android`
+
+## 환경 변수
+
+`.env.example`
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_ANON_KEY=
+EXPO_PUBLIC_NAVER_MAP_CLIENT_ID=
+EXPO_PUBLIC_KAKAO_MAP_APP_KEY=
+```
+
+## Supabase 권장 사항
+
+- 클라이언트에는 `service_role` key를 넣지 않습니다.
+- 모든 읽기/쓰기 정책은 RLS 기준으로 설계합니다.
+- `spray-photos` Storage 버킷과 `spray_photos` 테이블 권한을 따로 점검해야 합니다.
+- 실시간 반영은 `spray_jobs`, `fields` 변경 구독부터 시작하는 구조입니다.
+
+## 화면 구성
+
+- `app/login.tsx`: 로그인
+- `app/(tabs)/dashboard.tsx`: 대시보드
+- `app/(tabs)/map.tsx`: 지도
+- `app/(tabs)/jobs.tsx`: 작업 목록
+- `app/(tabs)/admin.tsx`: 관리자 시작 화면
+- `app/field/[id].tsx`: 필지 상세
+- `app/field/new.tsx`: 필지 등록
+
+## 다음 작업 우선순위
+
+1. 패키지 설치 후 실제 Expo 구동 확인
+2. Supabase SQL 실행 및 실제 프로젝트 연결
+3. 지도 직접 그리기 UI 구체화
+4. 기존 진설초해 앱과 같은 Supabase 데이터 확인
+5. 갤럭시 실기기에서 로그인, 지도, 상태 변경, 사진 업로드 점검
+
+## 예상 진척률
+
+- 현재 기준 약 `25%`
+- 이유: 화면 골격, Supabase API, Realtime 구독, 사진 업로드, SQL/RLS 준비 파일까지 들어갔고 실제 설치/실기기 테스트가 남아 있습니다.
+
+## 예상 소요
+
+- 갤럭시 우선 1차 MVP 마감: 추가 `10~18시간`
+- 갤럭시 + 아이폰 동시 1차 MVP 마감: 추가 `22~32시간`
