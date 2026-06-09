@@ -48,7 +48,7 @@
 
 ## 최신 푸시 상태
 
-- 최신 커밋: 커밋 준비 중
+- 최신 커밋: `5c9fa56 Enable sample mode registration flows`
 - 브랜치: `master`
 - 원격 상태: `origin/master`와 동기화 완료
 
