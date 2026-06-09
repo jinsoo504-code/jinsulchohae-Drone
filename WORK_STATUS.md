@@ -1,6 +1,6 @@
 # 드론방제앱 작업 진행판
 
-마지막 갱신: 2026-06-10 01:49:18 +09:00
+마지막 갱신: 2026-06-10 01:52:55 +09:00
 
 ## 현재 목표
 
@@ -80,6 +80,7 @@
 - 다운로드 검증: `APK_DOWNLOAD_VERIFICATION.md`
 - 빠른 설치: `GALAXY_QUICK_INSTALL.md`
 - 최종 인수점검: `GALAXY_ACCEPTANCE_CHECK.md`
+- 남은 실기기 점검 이슈: https://github.com/jinsoo504-code/jinsulchohae-drone-app/issues/1
 
 ## 최신 푸시 상태
 
@@ -91,6 +92,9 @@
 
 1. 갤럭시에 APK 설치 후 실제 화면 확인
 2. 갤럭시 실기기 점검표 전체 항목 완료 확인
+
+남은 작업은 GitHub 이슈 #1에서도 확인 가능하다:
+https://github.com/jinsoo504-code/jinsulchohae-drone-app/issues/1
 
 ## 확인 방법
 
