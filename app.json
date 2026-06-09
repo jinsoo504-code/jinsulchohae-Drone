@@ -31,7 +31,8 @@
       "expo-router",
       "expo-image-picker",
       "expo-location",
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true
