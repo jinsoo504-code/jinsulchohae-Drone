@@ -45,6 +45,24 @@ export async function createField(input: {
   return supabase.from("fields").insert(input).select("*").single();
 }
 
+export async function createFarmer(input: {
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  memo?: string | null;
+}) {
+  return supabase
+    .from("farmers")
+    .insert({
+      name: input.name,
+      phone: input.phone ?? null,
+      address: input.address ?? null,
+      memo: input.memo ?? null
+    })
+    .select("*")
+    .single();
+}
+
 export async function createSprayJob(input: {
   field_id: string;
   farmer_id: string;
