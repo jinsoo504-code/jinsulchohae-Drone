@@ -2,6 +2,8 @@
 
 농가와 드론방제팀이 함께 사용하는 모바일 필지관리 앱의 1차 MVP 작업 폴더입니다.
 
+현재 작업 진행 상태는 [`WORK_STATUS.md`](./WORK_STATUS.md)에서 확인합니다.
+
 ## 현재 범위
 
 - Expo 기반 React Native 모바일 앱 분리
