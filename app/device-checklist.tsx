@@ -38,6 +38,11 @@ const CHECKLIST: ChecklistItem[] = [
     detail: "지도 탭에서 필지 선택 후 하단 상세 카드가 바뀌는지 확인합니다."
   },
   {
+    id: "job-list",
+    title: "작업 목록",
+    detail: "작업 목록 탭에서 오늘 작업, 상태별 필터, 현장 요약이 정상 표시되는지 확인합니다."
+  },
+  {
     id: "job-status",
     title: "상태 변경",
     detail: "필지 상세에서 방제 시작, 완료, 문제 발생 상태가 목록/대시보드에 반영되는지 확인합니다."
@@ -56,6 +61,11 @@ const CHECKLIST: ChecklistItem[] = [
     id: "field",
     title: "필지 등록",
     detail: "농가 검색/신규 입력, 현재 위치 좌표, 임시 필지 생성, 팀 배정 후 저장 흐름을 확인합니다."
+  },
+  {
+    id: "job-assignment",
+    title: "작업 배정",
+    detail: "새 필지 등록 시 담당 방제팀을 선택하고 상세 화면에서 배정된 팀이 보이는지 확인합니다."
   },
   {
     id: "supabase",
@@ -115,7 +125,8 @@ export default function DeviceChecklistScreen() {
       ...checkState,
       [id]: {
         checked: !current?.checked,
-        checkedAt: current?.checked ? null : new Date().toISOString()
+        checkedAt: current?.checked ? null : new Date().toISOString(),
+        memo: current?.memo ?? ""
       }
     };
 
