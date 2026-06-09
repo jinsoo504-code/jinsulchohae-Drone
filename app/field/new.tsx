@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import * as Location from "expo-location";
 import { router } from "expo-router";
 import {
   createFarmer,
@@ -21,6 +22,7 @@ export default function NewFieldScreen() {
   const [address, setAddress] = useState("");
   const [centerLat, setCenterLat] = useState("");
   const [centerLng, setCenterLng] = useState("");
+  const [polygonRadiusM, setPolygonRadiusM] = useState("60");
   const [cropName, setCropName] = useState("");
   const [scheduledDate, setScheduledDate] = useState(new Date().toISOString().slice(0, 10));
   const [polygonText, setPolygonText] = useState(
@@ -28,6 +30,7 @@ export default function NewFieldScreen() {
   );
   const [saving, setSaving] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     fetchSprayTeams()
@@ -70,6 +73,59 @@ export default function NewFieldScreen() {
     setFarmerMatches([]);
   }
 
+  async function handleUseCurrentLocation() {
+    setLocating(true);
+
+    try {
+      const permission = await Location.requestForegroundPermissionsAsync();
+
+      if (!permission.granted) {
+        Alert.alert("위치 권한 필요", "현재 위치로 중심 좌표를 입력하려면 위치 권한이 필요합니다.");
+        return;
+      }
+
+      const position = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High
+      });
+
+      setCenterLat(position.coords.latitude.toFixed(7));
+      setCenterLng(position.coords.longitude.toFixed(7));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "현재 위치를 가져오지 못했습니다.";
+      Alert.alert("위치 확인 실패", message);
+    } finally {
+      setLocating(false);
+    }
+  }
+
+  function handleGeneratePolygon() {
+    const lat = Number(centerLat);
+    const lng = Number(centerLng);
+    const radiusM = Number(polygonRadiusM);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      Alert.alert("좌표 확인", "중심 위도와 경도를 먼저 숫자로 입력해 주세요.");
+      return;
+    }
+
+    if (!Number.isFinite(radiusM) || radiusM <= 0) {
+      Alert.alert("반경 확인", "필지 반경은 0보다 큰 숫자로 입력해 주세요.");
+      return;
+    }
+
+    const latDelta = radiusM / 111320;
+    const lngDelta = radiusM / (111320 * Math.cos((lat * Math.PI) / 180));
+    const coordinates = [
+      [lng - lngDelta, lat + latDelta],
+      [lng + lngDelta, lat + latDelta],
+      [lng + lngDelta, lat - latDelta],
+      [lng - lngDelta, lat - latDelta],
+      [lng - lngDelta, lat + latDelta]
+    ];
+
+    setPolygonText(JSON.stringify(coordinates.map(([x, y]) => [Number(x.toFixed(7)), Number(y.toFixed(7))])));
+  }
+
   async function handleSave() {
     if (!farmerName.trim() || !fieldName.trim() || !centerLat.trim() || !centerLng.trim()) {
       Alert.alert("입력 확인", "농가명, 필지명, 중심 좌표는 필수입니다.");
@@ -88,7 +144,17 @@ export default function NewFieldScreen() {
         return;
       }
 
-      if (!Array.isArray(coordinates) || coordinates.length < 4) {
+      if (
+        !Array.isArray(coordinates) ||
+        coordinates.length < 4 ||
+        coordinates.some(
+          (point) =>
+            !Array.isArray(point) ||
+            point.length !== 2 ||
+            !Number.isFinite(Number(point[0])) ||
+            !Number.isFinite(Number(point[1]))
+        )
+      ) {
         Alert.alert("좌표 확인", "Polygon 좌표는 최소 4개 지점이 필요합니다.");
         return;
       }
@@ -179,6 +245,23 @@ export default function NewFieldScreen() {
       <TextInput style={styles.input} placeholder="주소" value={address} onChangeText={setAddress} />
       <TextInput style={styles.input} placeholder="중심 위도" keyboardType="numeric" value={centerLat} onChangeText={setCenterLat} />
       <TextInput style={styles.input} placeholder="중심 경도" keyboardType="numeric" value={centerLng} onChangeText={setCenterLng} />
+      <View style={styles.coordinateTools}>
+        <Pressable style={styles.toolButton} onPress={handleUseCurrentLocation} disabled={locating}>
+          <Text style={styles.toolButtonText}>
+            {locating ? "현재 위치 확인 중..." : "현재 위치로 좌표 입력"}
+          </Text>
+        </Pressable>
+        <TextInput
+          style={[styles.input, styles.radiusInput]}
+          placeholder="필지 반경 m"
+          keyboardType="numeric"
+          value={polygonRadiusM}
+          onChangeText={setPolygonRadiusM}
+        />
+        <Pressable style={styles.toolButton} onPress={handleGeneratePolygon}>
+          <Text style={styles.toolButtonText}>중심좌표로 임시 필지 만들기</Text>
+        </Pressable>
+      </View>
       <TextInput style={styles.input} placeholder="작물명" value={cropName} onChangeText={setCropName} />
       <TextInput style={styles.input} placeholder="작업 예정일 YYYY-MM-DD" value={scheduledDate} onChangeText={setScheduledDate} />
       <View style={styles.sectionBox}>
@@ -263,6 +346,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 15
+  },
+  coordinateTools: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 12,
+    gap: 10
+  },
+  toolButton: {
+    backgroundColor: "#E0F2FE",
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: "center"
+  },
+  toolButtonText: {
+    color: "#075985",
+    fontWeight: "800"
+  },
+  radiusInput: {
+    backgroundColor: "#F8FAFC"
   },
   selectedFarmerBox: {
     backgroundColor: "#ECFDF5",
