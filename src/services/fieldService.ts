@@ -103,6 +103,26 @@ export async function fetchSprayTeams(): Promise<SprayTeam[]> {
   return data ?? [];
 }
 
+export async function createSprayTeam(input: {
+  team_name: string;
+  manager_name?: string | null;
+  phone?: string | null;
+}) {
+  if (!env.isSupabaseConfigured) {
+    throw new Error(".env에 Supabase URL과 anon key를 먼저 입력해 주세요.");
+  }
+
+  return supabase
+    .from("spray_teams")
+    .insert({
+      team_name: input.team_name,
+      manager_name: input.manager_name ?? null,
+      phone: input.phone ?? null
+    })
+    .select("*")
+    .single();
+}
+
 export async function createFarmer(input: {
   name: string;
   phone?: string | null;
