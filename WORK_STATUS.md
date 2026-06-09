@@ -49,7 +49,7 @@
 
 ## 최신 푸시 상태
 
-- 최신 커밋: 커밋 준비 중
+- 최신 커밋: `417d1f6 Persist sample mode data locally`
 - 브랜치: `master`
 - 원격 상태: `origin/master`와 동기화 완료
 
