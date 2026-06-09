@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
-import { createFarmer, createField, createSprayJob } from "@/src/services/fieldService";
-import { GeoJsonPolygon } from "@/src/types/domain";
+import {
+  createFarmer,
+  createField,
+  createSprayJob,
+  searchFarmers
+} from "@/src/services/fieldService";
+import { Farmer, GeoJsonPolygon } from "@/src/types/domain";
 
 export default function NewFieldScreen() {
+  const [selectedFarmer, setSelectedFarmer] = useState<Farmer | null>(null);
+  const [farmerMatches, setFarmerMatches] = useState<Farmer[]>([]);
   const [farmerName, setFarmerName] = useState("");
   const [farmerPhone, setFarmerPhone] = useState("");
   const [fieldName, setFieldName] = useState("");
@@ -17,6 +24,40 @@ export default function NewFieldScreen() {
     "[[127.2852,34.6122],[127.2861,34.6123],[127.2862,34.6115],[127.2854,34.6114],[127.2852,34.6122]]"
   );
   const [saving, setSaving] = useState(false);
+  const [searching, setSearching] = useState(false);
+
+  async function handleFarmerSearch() {
+    const keyword = farmerPhone.trim() || farmerName.trim();
+
+    if (!keyword) {
+      Alert.alert("검색 확인", "농가명 또는 전화번호를 먼저 입력해 주세요.");
+      return;
+    }
+
+    setSearching(true);
+    setSelectedFarmer(null);
+
+    try {
+      const matches = await searchFarmers(keyword);
+      setFarmerMatches(matches);
+
+      if (matches.length === 0) {
+        Alert.alert("검색 결과 없음", "저장 시 새 농가로 등록됩니다.");
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "농가 검색에 실패했습니다.";
+      Alert.alert("검색 실패", message);
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function handleSelectFarmer(farmer: Farmer) {
+    setSelectedFarmer(farmer);
+    setFarmerName(farmer.name);
+    setFarmerPhone(farmer.phone ?? "");
+    setFarmerMatches([]);
+  }
 
   async function handleSave() {
     if (!farmerName.trim() || !fieldName.trim() || !centerLat.trim() || !centerLng.trim()) {
@@ -46,18 +87,21 @@ export default function NewFieldScreen() {
         coordinates: [coordinates]
       };
 
-      const { data: farmer, error: farmerError } = await createFarmer({
-        name: farmerName.trim(),
-        phone: farmerPhone.trim() || null,
-        address: address.trim() || null
-      });
+      const farmer = selectedFarmer;
+      const farmerResult = farmer
+        ? { data: farmer, error: null }
+        : await createFarmer({
+            name: farmerName.trim(),
+            phone: farmerPhone.trim() || null,
+            address: address.trim() || null
+          });
 
-      if (farmerError) {
-        throw farmerError;
+      if (farmerResult.error) {
+        throw farmerResult.error;
       }
 
       const { data, error } = await createField({
-        farmer_id: farmer.id,
+        farmer_id: farmerResult.data.id,
         field_name: fieldName.trim(),
         address: address.trim() || undefined,
         center_lat: lat,
@@ -72,7 +116,7 @@ export default function NewFieldScreen() {
 
       await createSprayJob({
         field_id: data.id,
-        farmer_id: farmer.id,
+        farmer_id: farmerResult.data.id,
         scheduled_date: scheduledDate.trim() || null
       });
 
@@ -90,8 +134,35 @@ export default function NewFieldScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>필지 등록</Text>
       <Text style={styles.caption}>농가, 필지, 기본 방제 예정 작업을 한 번에 만듭니다.</Text>
+      {selectedFarmer ? (
+        <View style={styles.selectedFarmerBox}>
+          <Text style={styles.selectedFarmerTitle}>선택된 기존 농가</Text>
+          <Text style={styles.selectedFarmerText}>
+            {selectedFarmer.name} · {selectedFarmer.phone ?? "전화번호 없음"}
+          </Text>
+          <Pressable style={styles.clearButton} onPress={() => setSelectedFarmer(null)}>
+            <Text style={styles.clearButtonText}>새 농가로 입력</Text>
+          </Pressable>
+        </View>
+      ) : null}
       <TextInput style={styles.input} placeholder="농가명" value={farmerName} onChangeText={setFarmerName} />
       <TextInput style={styles.input} placeholder="농가 전화번호" keyboardType="phone-pad" value={farmerPhone} onChangeText={setFarmerPhone} />
+      <Pressable style={styles.lookupButton} onPress={handleFarmerSearch} disabled={searching}>
+        <Text style={styles.lookupButtonText}>
+          {searching ? "농가 검색 중..." : "기존 농가 검색"}
+        </Text>
+      </Pressable>
+      {farmerMatches.map((farmer) => (
+        <Pressable
+          key={farmer.id}
+          style={styles.matchCard}
+          onPress={() => handleSelectFarmer(farmer)}
+        >
+          <Text style={styles.matchName}>{farmer.name}</Text>
+          <Text style={styles.matchMeta}>{farmer.phone ?? "전화번호 없음"}</Text>
+          <Text style={styles.matchMeta}>{farmer.address ?? "주소 없음"}</Text>
+        </Pressable>
+      ))}
       <TextInput style={styles.input} placeholder="필지명" value={fieldName} onChangeText={setFieldName} />
       <TextInput style={styles.input} placeholder="주소" value={address} onChangeText={setAddress} />
       <TextInput style={styles.input} placeholder="중심 위도" keyboardType="numeric" value={centerLat} onChangeText={setCenterLat} />
@@ -142,6 +213,63 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 15
+  },
+  selectedFarmerBox: {
+    backgroundColor: "#ECFDF5",
+    borderRadius: 16,
+    padding: 14,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: "#86EFAC"
+  },
+  selectedFarmerTitle: {
+    color: "#166534",
+    fontSize: 13,
+    fontWeight: "800"
+  },
+  selectedFarmerText: {
+    color: "#14532D",
+    fontSize: 15,
+    fontWeight: "700"
+  },
+  clearButton: {
+    alignSelf: "flex-start",
+    marginTop: 2,
+    borderRadius: 999,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  clearButtonText: {
+    color: "#166534",
+    fontWeight: "800"
+  },
+  lookupButton: {
+    backgroundColor: "#E0F2FE",
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: "center"
+  },
+  lookupButtonText: {
+    color: "#075985",
+    fontWeight: "800"
+  },
+  matchCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 14,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: "#BFDBFE"
+  },
+  matchName: {
+    color: "#14213D",
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  matchMeta: {
+    color: "#57534E",
+    fontSize: 13
   },
   multiline: {
     minHeight: 120,
