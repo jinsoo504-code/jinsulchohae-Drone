@@ -8,7 +8,7 @@ export async function pickCompletionPhoto() {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
   if (!permission.granted) {
-    throw new Error("사진 접근 권한이 필요합니다.");
+    throw new Error("사진 접근 권한이 필요합니다. 갤럭시 설정에서 Expo Go의 사진 권한을 허용해 주세요.");
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
