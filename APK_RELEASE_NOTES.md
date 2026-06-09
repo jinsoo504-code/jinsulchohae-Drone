@@ -8,6 +8,13 @@
 - 파일명: `jinsulchohae-drone-app-debug.apk`
 - SHA-256: `14bb8a902dfc607c124b2f06baaecf48647cff3eaaec654dc5fc41c0bd6746a1`
 
+## 빠른 설치 링크
+
+- 빠른 설치 문서: https://github.com/jinsoo504-code/jinsulchohae-drone-app/blob/main/GALAXY_QUICK_INSTALL.md
+- 설치 상세 안내: https://github.com/jinsoo504-code/jinsulchohae-drone-app/blob/main/APK_INSTALL.md
+- 체크섬 확인: https://github.com/jinsoo504-code/jinsulchohae-drone-app/blob/main/APK_CHECKSUMS.md
+- 다운로드 검증 결과: https://github.com/jinsoo504-code/jinsulchohae-drone-app/blob/main/APK_DOWNLOAD_VERIFICATION.md
+
 ## 설치 순서
 
 1. 갤럭시에서 APK 파일 링크를 엽니다.
