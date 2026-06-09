@@ -10,6 +10,8 @@
 
 갤럭시 빠른 설치 링크와 QR은 [`GALAXY_QUICK_INSTALL.md`](./GALAXY_QUICK_INSTALL.md)에서 확인합니다.
 
+갤럭시 최종 인수점검 기준은 [`GALAXY_ACCEPTANCE_CHECK.md`](./GALAXY_ACCEPTANCE_CHECK.md)에서 확인합니다.
+
 ## 현재 범위
 
 - Expo 기반 React Native 모바일 앱 분리
@@ -48,6 +50,7 @@
 - 갤럭시 터널 실행용 `@expo/ngrok` 의존성 고정
 - GitHub `jinsulchohae-drone-app` 저장소에 갤럭시 설치용 APK 릴리스 업로드 완료
 - 갤럭시 APK 빠른 설치 링크와 QR 문서 추가
+- 갤럭시 목표 항목별 최종 인수점검 문서 추가
 - 갤럭시 APK 다운로드/설치/권한 문제 해결 문서 추가
 - Android/iOS는 실제 지도, 웹은 목록형 지도 미리보기로 분리
 - Expo 웹 번들 생성 확인 완료
@@ -86,6 +89,7 @@
 - 체크섬: [`APK_CHECKSUMS.md`](./APK_CHECKSUMS.md)
 - 다운로드 검증: [`APK_DOWNLOAD_VERIFICATION.md`](./APK_DOWNLOAD_VERIFICATION.md)
 - 빠른 설치: [`GALAXY_QUICK_INSTALL.md`](./GALAXY_QUICK_INSTALL.md)
+- 최종 인수점검: [`GALAXY_ACCEPTANCE_CHECK.md`](./GALAXY_ACCEPTANCE_CHECK.md)
 
 ## 환경 변수
 
