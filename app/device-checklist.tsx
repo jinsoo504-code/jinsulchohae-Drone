@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
@@ -66,6 +66,7 @@ const CHECKLIST: ChecklistItem[] = [
 export default function DeviceChecklistScreen() {
   const [checkState, setCheckState] = useState<ChecklistState>({});
   const [deviceStatus, setDeviceStatus] = useState<string | null>(null);
+  const [reportText, setReportText] = useState<string | null>(null);
   const [checkingDevice, setCheckingDevice] = useState(false);
   const completedCount = CHECKLIST.filter((item) => checkState[item.id]?.checked).length;
   const allCompleted = completedCount === CHECKLIST.length;
@@ -144,6 +145,46 @@ export default function DeviceChecklistScreen() {
     }
   }
 
+  function buildReport() {
+    const checkedLines = CHECKLIST.map((item) => {
+      const record = checkState[item.id];
+      const status = record?.checked ? "완료" : "미완료";
+      const checkedAt = record?.checkedAt
+        ? ` / ${new Date(record.checkedAt).toLocaleString("ko-KR")}`
+        : "";
+
+      return `- ${item.title}: ${status}${checkedAt}`;
+    });
+
+    return [
+      "[드론방제앱 갤럭시 실기기 점검 리포트]",
+      `생성 시간: ${new Date().toLocaleString("ko-KR")}`,
+      `진행률: ${progressText}`,
+      `전체 완료: ${allCompleted ? "예" : "아니오"}`,
+      "",
+      "[기기 준비 상태]",
+      deviceStatus ?? "아직 확인하지 않음",
+      "",
+      "[항목별 결과]",
+      ...checkedLines
+    ].join("\n");
+  }
+
+  async function shareReport() {
+    const nextReport = buildReport();
+    setReportText(nextReport);
+
+    try {
+      await Share.share({
+        title: "드론방제앱 갤럭시 실기기 점검 리포트",
+        message: nextReport
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "점검 리포트를 공유하지 못했습니다.";
+      Alert.alert("공유 실패", message);
+    }
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.heading}>갤럭시 실기기 점검</Text>
@@ -158,6 +199,9 @@ export default function DeviceChecklistScreen() {
             ? "갤럭시 실기기 MVP 흐름 점검이 모두 완료되었습니다."
             : "각 항목을 완료하면 완료 시간이 함께 저장됩니다."}
         </Text>
+        <Pressable style={styles.reportButton} onPress={shareReport}>
+          <Text style={styles.reportButtonText}>점검 리포트 공유</Text>
+        </Pressable>
       </View>
       <View style={styles.deviceCard}>
         <Text style={styles.deviceTitle}>기기 준비 상태</Text>
@@ -205,6 +249,12 @@ export default function DeviceChecklistScreen() {
       <Pressable style={styles.resetButton} onPress={resetChecklist}>
         <Text style={styles.resetButtonText}>점검표 초기화</Text>
       </Pressable>
+      {reportText ? (
+        <View style={styles.reportCard}>
+          <Text style={styles.reportTitle}>최근 생성한 점검 리포트</Text>
+          <Text style={styles.reportBody}>{reportText}</Text>
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
@@ -251,6 +301,17 @@ const styles = StyleSheet.create({
     color: "#DBEAFE",
     fontSize: 13,
     lineHeight: 19
+  },
+  reportButton: {
+    marginTop: 6,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: "center"
+  },
+  reportButtonText: {
+    color: "#14213D",
+    fontWeight: "800"
   },
   deviceCard: {
     backgroundColor: "#FFFFFF",
@@ -351,5 +412,23 @@ const styles = StyleSheet.create({
   resetButtonText: {
     color: "#44403C",
     fontWeight: "800"
+  },
+  reportCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 16,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "#CBD5E1"
+  },
+  reportTitle: {
+    color: "#14213D",
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  reportBody: {
+    color: "#1C1917",
+    fontSize: 12,
+    lineHeight: 18
   }
 });
