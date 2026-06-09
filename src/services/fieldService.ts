@@ -1,7 +1,12 @@
 import { supabase } from "@/src/lib/supabase";
+import { env } from "@/src/lib/env";
 import { Field, FieldWithRelations, GeoJsonPolygon, JobStatus } from "@/src/types/domain";
 
 export async function fetchFields(): Promise<FieldWithRelations[]> {
+  if (!env.isSupabaseConfigured) {
+    throw new Error("Supabase 환경변수가 없어 샘플 데이터를 표시합니다.");
+  }
+
   const { data, error } = await supabase
     .from("fields")
     .select(
@@ -42,6 +47,10 @@ export async function createField(input: {
   crop_name?: string;
   memo?: string;
 }) {
+  if (!env.isSupabaseConfigured) {
+    throw new Error(".env에 Supabase URL과 anon key를 먼저 입력해 주세요.");
+  }
+
   return supabase.from("fields").insert(input).select("*").single();
 }
 
@@ -51,6 +60,10 @@ export async function createFarmer(input: {
   address?: string | null;
   memo?: string | null;
 }) {
+  if (!env.isSupabaseConfigured) {
+    throw new Error(".env에 Supabase URL과 anon key를 먼저 입력해 주세요.");
+  }
+
   return supabase
     .from("farmers")
     .insert({
@@ -70,6 +83,10 @@ export async function createSprayJob(input: {
   scheduled_date?: string | null;
   memo?: string | null;
 }) {
+  if (!env.isSupabaseConfigured) {
+    throw new Error(".env에 Supabase URL과 anon key를 먼저 입력해 주세요.");
+  }
+
   return supabase
     .from("spray_jobs")
     .insert({
@@ -84,6 +101,10 @@ export async function createSprayJob(input: {
 }
 
 export async function updateJobStatus(jobId: string, status: JobStatus, userId?: string) {
+  if (!env.isSupabaseConfigured) {
+    throw new Error(".env에 Supabase URL과 anon key를 먼저 입력해 주세요.");
+  }
+
   const { data: existing, error: fetchError } = await supabase
     .from("spray_jobs")
     .select("status")
@@ -121,6 +142,10 @@ export async function updateJobStatus(jobId: string, status: JobStatus, userId?:
 }
 
 export function subscribeFieldRealtime(onChange: () => void) {
+  if (!env.isSupabaseConfigured) {
+    return () => undefined;
+  }
+
   const channel = supabase
     .channel("spray-jobs-realtime")
     .on(

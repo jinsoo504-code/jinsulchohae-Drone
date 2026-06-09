@@ -1,6 +1,7 @@
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import { decode } from "base64-arraybuffer";
+import { env } from "@/src/lib/env";
 import { supabase } from "@/src/lib/supabase";
 
 export async function pickCompletionPhoto() {
@@ -24,6 +25,10 @@ export async function pickCompletionPhoto() {
 }
 
 export async function uploadJobPhoto(jobId: string, uri: string, uploadedBy?: string) {
+  if (!env.isSupabaseConfigured) {
+    throw new Error(".env에 Supabase URL과 anon key를 먼저 입력해 주세요.");
+  }
+
   const base64 = await FileSystem.readAsStringAsync(uri, {
     encoding: FileSystem.EncodingType.Base64
   });
