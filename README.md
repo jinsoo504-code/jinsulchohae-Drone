@@ -42,6 +42,7 @@
 - 구형/신형 갤럭시 사진 접근 권한 호환성 보강
 - LAN QR 연결 실패 시 사용할 갤럭시 터널 실행 명령 추가
 - 갤럭시 터널 실행용 `@expo/ngrok` 의존성 고정
+- GitHub `jinsulchohae-drone-app` 저장소에 갤럭시 설치용 APK 릴리스 업로드 완료
 - Android/iOS는 실제 지도, 웹은 목록형 지도 미리보기로 분리
 - Expo 웹 번들 생성 확인 완료
 - Expo 웹 서버 실행 및 `localhost` 응답 확인 완료
@@ -68,6 +69,12 @@
 4. 패키지 설치: `npm install`
 5. 갤럭시에서 Expo Go로 실행: `npm start`
 6. Android 네이티브 빌드가 필요하면: `npm run android`
+
+## APK 실행파일
+
+- 릴리스: https://github.com/jinsoo504-code/jinsulchohae-drone-app/releases/tag/apk-20260610-005859
+- APK 다운로드: https://github.com/jinsoo504-code/jinsulchohae-drone-app/releases/download/apk-20260610-005859/jinsulchohae-drone-app-debug.apk
+- 빌드: GitHub Actions `Build Android APK` 성공
 
 ## 환경 변수
 
@@ -106,8 +113,8 @@ EXPO_PUBLIC_KAKAO_MAP_APP_KEY=
 
 ## 예상 진척률
 
-- 현재 기준 약 `98%`
-- 이유: 화면 골격, Supabase API, Realtime 구독, 사진 업로드, SQL/RLS 준비 파일에 더해 패키지 설치, 타입검사, Expo Doctor 통과, 웹 번들 확인, Expo 웹 서버 응답 확인, 반복 검증 명령, 갤럭시 Expo Go 실행 명령/절차, 갤럭시 실행 사전점검/터널 실행 대안과 터널 의존성 고정, Supabase 연결 점검, 갤럭시 실기기 점검표와 완료 시간/현장 메모 기록, 갤럭시 권한/연결 상태 확인, 점검 리포트 공유, 갤럭시 사진 권한 호환성 보강, 작업 목록 현장 필터, 농가 검색/선택, 방제팀 생성/목록/수정/배정, 농가-필지-작업 동시 등록, 현재 위치 기반 좌표 입력, 임시 polygon 생성, 상세 화면 사진 확인, 로그인 샘플 모드, 샘플 상태 변경 유지, 샘플 사진 선택/목록 확인, 샘플 등록/배정 저장, 샘플 등록 필지의 지도/상세 반영, 샘플 데이터 로컬 유지, 샘플 데이터 초기화, 환경변수 미설정 안전 진입이 완료됐고 실제 기기에서 최종 흐름 확인이 남아 있습니다.
+- 현재 기준 약 `99%`
+- 이유: 화면 골격, Supabase API, Realtime 구독, 사진 업로드, SQL/RLS 준비 파일에 더해 패키지 설치, 타입검사, Expo Doctor 통과, 웹 번들 확인, Expo 웹 서버 응답 확인, 반복 검증 명령, 갤럭시 Expo Go 실행 명령/절차, 갤럭시 실행 사전점검/터널 실행 대안과 터널 의존성 고정, Supabase 연결 점검, 갤럭시 실기기 점검표와 완료 시간/현장 메모 기록, 갤럭시 권한/연결 상태 확인, 점검 리포트 공유, 갤럭시 사진 권한 호환성 보강, GitHub APK 릴리스 업로드, 작업 목록 현장 필터, 농가 검색/선택, 방제팀 생성/목록/수정/배정, 농가-필지-작업 동시 등록, 현재 위치 기반 좌표 입력, 임시 polygon 생성, 상세 화면 사진 확인, 로그인 샘플 모드, 샘플 상태 변경 유지, 샘플 사진 선택/목록 확인, 샘플 등록/배정 저장, 샘플 등록 필지의 지도/상세 반영, 샘플 데이터 로컬 유지, 샘플 데이터 초기화, 환경변수 미설정 안전 진입이 완료됐고 실제 기기에서 최종 흐름 확인이 남아 있습니다.
 
 ## 예상 소요
 
