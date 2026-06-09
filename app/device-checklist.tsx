@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
+import { env } from "@/src/lib/env";
 
 type ChecklistItem = {
   id: string;
@@ -62,6 +65,8 @@ const CHECKLIST: ChecklistItem[] = [
 
 export default function DeviceChecklistScreen() {
   const [checkState, setCheckState] = useState<ChecklistState>({});
+  const [deviceStatus, setDeviceStatus] = useState<string | null>(null);
+  const [checkingDevice, setCheckingDevice] = useState(false);
   const completedCount = CHECKLIST.filter((item) => checkState[item.id]?.checked).length;
   const allCompleted = completedCount === CHECKLIST.length;
   const progressText = useMemo(
@@ -118,6 +123,27 @@ export default function DeviceChecklistScreen() {
     await persist({});
   }
 
+  async function checkDeviceReadiness() {
+    setCheckingDevice(true);
+
+    try {
+      const locationPermission = await Location.requestForegroundPermissionsAsync();
+      const photoPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const lines = [
+        `위치 권한: ${locationPermission.granted ? "허용됨" : "확인 필요"}`,
+        `사진 권한: ${photoPermission.granted ? "허용됨" : "확인 필요"}`,
+        `Supabase: ${env.isSupabaseConfigured ? "실제 연결 설정됨" : "샘플 모드"}`
+      ];
+
+      setDeviceStatus(lines.join("\n"));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "기기 준비 상태를 확인하지 못했습니다.";
+      setDeviceStatus(`확인 실패: ${message}`);
+    } finally {
+      setCheckingDevice(false);
+    }
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.heading}>갤럭시 실기기 점검</Text>
@@ -132,6 +158,22 @@ export default function DeviceChecklistScreen() {
             ? "갤럭시 실기기 MVP 흐름 점검이 모두 완료되었습니다."
             : "각 항목을 완료하면 완료 시간이 함께 저장됩니다."}
         </Text>
+      </View>
+      <View style={styles.deviceCard}>
+        <Text style={styles.deviceTitle}>기기 준비 상태</Text>
+        <Text style={styles.deviceDetail}>
+          갤럭시에서 위치 권한, 사진 권한, Supabase 연결 모드를 한 번에 확인합니다.
+        </Text>
+        <Pressable
+          style={styles.deviceButton}
+          onPress={checkDeviceReadiness}
+          disabled={checkingDevice}
+        >
+          <Text style={styles.deviceButtonText}>
+            {checkingDevice ? "확인 중..." : "권한/연결 상태 확인"}
+          </Text>
+        </Pressable>
+        {deviceStatus ? <Text style={styles.deviceStatus}>{deviceStatus}</Text> : null}
       </View>
       {CHECKLIST.map((item) => {
         const record = checkState[item.id];
@@ -209,6 +251,43 @@ const styles = StyleSheet.create({
     color: "#DBEAFE",
     fontSize: 13,
     lineHeight: 19
+  },
+  deviceCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    padding: 16,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "#BFDBFE"
+  },
+  deviceTitle: {
+    color: "#14213D",
+    fontSize: 17,
+    fontWeight: "800"
+  },
+  deviceDetail: {
+    color: "#57534E",
+    fontSize: 13,
+    lineHeight: 19
+  },
+  deviceButton: {
+    backgroundColor: "#E0F2FE",
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: "center"
+  },
+  deviceButtonText: {
+    color: "#075985",
+    fontWeight: "800"
+  },
+  deviceStatus: {
+    color: "#1C1917",
+    backgroundColor: "#F8FAFC",
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: "700"
   },
   itemCard: {
     flexDirection: "row",
