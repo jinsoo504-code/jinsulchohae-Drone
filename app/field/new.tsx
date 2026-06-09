@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import {
   createFarmer,
   createField,
   createSprayJob,
+  fetchSprayTeams,
   searchFarmers
 } from "@/src/services/fieldService";
-import { Farmer, GeoJsonPolygon } from "@/src/types/domain";
+import { Farmer, GeoJsonPolygon, SprayTeam } from "@/src/types/domain";
 
 export default function NewFieldScreen() {
   const [selectedFarmer, setSelectedFarmer] = useState<Farmer | null>(null);
   const [farmerMatches, setFarmerMatches] = useState<Farmer[]>([]);
+  const [teams, setTeams] = useState<SprayTeam[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [farmerName, setFarmerName] = useState("");
   const [farmerPhone, setFarmerPhone] = useState("");
   const [fieldName, setFieldName] = useState("");
@@ -25,6 +28,14 @@ export default function NewFieldScreen() {
   );
   const [saving, setSaving] = useState(false);
   const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    fetchSprayTeams()
+      .then(setTeams)
+      .catch(() => {
+        setTeams([]);
+      });
+  }, []);
 
   async function handleFarmerSearch() {
     const keyword = farmerPhone.trim() || farmerName.trim();
@@ -117,6 +128,7 @@ export default function NewFieldScreen() {
       await createSprayJob({
         field_id: data.id,
         farmer_id: farmerResult.data.id,
+        assigned_team_id: selectedTeamId,
         scheduled_date: scheduledDate.trim() || null
       });
 
@@ -169,6 +181,44 @@ export default function NewFieldScreen() {
       <TextInput style={styles.input} placeholder="중심 경도" keyboardType="numeric" value={centerLng} onChangeText={setCenterLng} />
       <TextInput style={styles.input} placeholder="작물명" value={cropName} onChangeText={setCropName} />
       <TextInput style={styles.input} placeholder="작업 예정일 YYYY-MM-DD" value={scheduledDate} onChangeText={setScheduledDate} />
+      <View style={styles.sectionBox}>
+        <Text style={styles.sectionTitle}>담당 방제팀</Text>
+        <Text style={styles.sectionCaption}>팀을 선택하지 않으면 배정 전 작업으로 저장됩니다.</Text>
+        <View style={styles.teamList}>
+          <Pressable
+            style={[styles.teamButton, selectedTeamId === null && styles.teamButtonActive]}
+            onPress={() => setSelectedTeamId(null)}
+          >
+            <Text
+              style={[
+                styles.teamButtonText,
+                selectedTeamId === null && styles.teamButtonTextActive
+              ]}
+            >
+              배정 전
+            </Text>
+          </Pressable>
+          {teams.map((team) => (
+            <Pressable
+              key={team.id}
+              style={[styles.teamButton, selectedTeamId === team.id && styles.teamButtonActive]}
+              onPress={() => setSelectedTeamId(team.id)}
+            >
+              <Text
+                style={[
+                  styles.teamButtonText,
+                  selectedTeamId === team.id && styles.teamButtonTextActive
+                ]}
+              >
+                {team.team_name}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        {teams.length === 0 ? (
+          <Text style={styles.emptyTeamText}>등록된 팀이 없거나 Supabase 연결 전입니다.</Text>
+        ) : null}
+      </View>
       <TextInput
         style={[styles.input, styles.multiline]}
         placeholder="Polygon 좌표"
@@ -270,6 +320,47 @@ const styles = StyleSheet.create({
   matchMeta: {
     color: "#57534E",
     fontSize: 13
+  },
+  sectionBox: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 14,
+    gap: 10
+  },
+  sectionTitle: {
+    color: "#14213D",
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  sectionCaption: {
+    color: "#57534E",
+    fontSize: 13
+  },
+  teamList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8
+  },
+  teamButton: {
+    borderRadius: 999,
+    backgroundColor: "#E7E5E4",
+    paddingHorizontal: 12,
+    paddingVertical: 9
+  },
+  teamButtonActive: {
+    backgroundColor: "#14213D"
+  },
+  teamButtonText: {
+    color: "#44403C",
+    fontWeight: "800"
+  },
+  teamButtonTextActive: {
+    color: "#FFFFFF"
+  },
+  emptyTeamText: {
+    color: "#B45309",
+    fontSize: 13,
+    fontWeight: "700"
   },
   multiline: {
     minHeight: 120,

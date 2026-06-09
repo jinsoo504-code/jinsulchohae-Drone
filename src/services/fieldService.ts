@@ -1,6 +1,13 @@
 import { supabase } from "@/src/lib/supabase";
 import { env } from "@/src/lib/env";
-import { Farmer, Field, FieldWithRelations, GeoJsonPolygon, JobStatus } from "@/src/types/domain";
+import {
+  Farmer,
+  Field,
+  FieldWithRelations,
+  GeoJsonPolygon,
+  JobStatus,
+  SprayTeam
+} from "@/src/types/domain";
 
 export async function fetchFields(): Promise<FieldWithRelations[]> {
   if (!env.isSupabaseConfigured) {
@@ -71,6 +78,23 @@ export async function searchFarmers(query: string): Promise<Farmer[]> {
     .or(`name.ilike.%${keyword}%,phone.ilike.%${keyword}%`)
     .order("created_at", { ascending: false })
     .limit(8);
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
+
+export async function fetchSprayTeams(): Promise<SprayTeam[]> {
+  if (!env.isSupabaseConfigured) {
+    throw new Error(".env에 Supabase URL과 anon key를 먼저 입력해 주세요.");
+  }
+
+  const { data, error } = await supabase
+    .from("spray_teams")
+    .select("*")
+    .order("team_name", { ascending: true });
 
   if (error) {
     throw error;
